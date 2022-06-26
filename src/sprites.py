@@ -1,18 +1,12 @@
 import pygame
 
-from config import config
-
 
 class Bird(pygame.sprite.Sprite):
-    """ Will contain the bird attributes.
-        Args:
-        x_loc (int): X - coordinate of the center of the bird sprite
-        y_loc (int): Y - coordinate of the center of the bird sprite
-        velocity (int): Velocity of the bird sprite. """
 
-    def __init__(self, x_loc, y_loc, images):
+    def __init__(self, x_loc, y_loc, images, idx=0, flapped=False):
         super(Bird, self).__init__()
-        self.check = 0
+        self.idx = idx
+        self.flapped = flapped
         self.x_loc = x_loc
         self.y_loc = y_loc
         self.image = images["player"][0]
@@ -29,21 +23,14 @@ class Bird(pygame.sprite.Sprite):
 
 
 class UpperPipe(pygame.sprite.Sprite):
-    """ Will contain the upper pipe's attributes.
-        Args:
-        pipe_x (int): X - coordinate of the starting of the pipe
-        pipe_height (int): Height of the upper pipe
-        pipe_speed (int): Pipe speed with which they pipe's will move horizontally. """
 
     def __init__(self, pipe_x, pipe_height, pipe_speed, images):
         super(UpperPipe, self).__init__()
         self.pipe_speed = pipe_speed
         self.pipe_height = pipe_height
         self.image = images['pipe'][0]
-        # self.image.fill(GREEN)
-        # self.image.set_colorkey(WHITE)
         self.rect = self.image.get_rect()
-        self.rect.x = config.SCREENWIDTH
+        self.rect.x = pipe_x
         self.rect.y = -pipe_height
         self.mask = pygame.mask.from_surface(self.image)
 
@@ -58,11 +45,6 @@ class UpperPipe(pygame.sprite.Sprite):
 
 
 class LowerPipe(pygame.sprite.Sprite):
-    """ Will contain the lower pipe's attributes.
-        Args:
-        pipe_x (int): X - coordinate of the starting of the pipe
-        pipe_height (int): Height of the lower pipe
-        pipe_speed (int): Pipe speed with which they pipe's will move horizontally. """
 
     def __init__(self, pipe_x, pipe_height, pipe_speed, images):
         super(LowerPipe, self).__init__()
@@ -70,7 +52,7 @@ class LowerPipe(pygame.sprite.Sprite):
         self.pipe_height = pipe_height
         self.image = images['pipe'][1]
         self.rect = self.image.get_rect()
-        self.rect.x = config.SCREENWIDTH  # pipe_x
+        self.rect.x = pipe_x
         self.rect.y = pipe_height
         self.mask = pygame.mask.from_surface(self.image)
 
