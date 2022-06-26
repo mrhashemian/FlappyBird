@@ -31,7 +31,7 @@ class UpperPipe(pygame.sprite.Sprite):
         self.image = images['pipe'][0]
         self.rect = self.image.get_rect()
         self.rect.x = pipe_x
-        self.rect.y = -pipe_height
+        self.rect.y = pipe_height
         self.mask = pygame.mask.from_surface(self.image)
 
     def update(self):
@@ -42,6 +42,9 @@ class UpperPipe(pygame.sprite.Sprite):
 
     def y_cord(self):
         return self.rect.y + self.pipe_height
+
+    def pipe_center(self):
+        return self.rect.center
 
 
 class LowerPipe(pygame.sprite.Sprite):
@@ -64,3 +67,6 @@ class LowerPipe(pygame.sprite.Sprite):
 
     def y_cord(self):
         return self.rect.y
+
+    def pipe_center(self):
+        return self.rect.center
