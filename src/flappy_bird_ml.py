@@ -1,5 +1,8 @@
 import random
 import sys
+# from typing import Literal
+from typing_extensions import Literal
+
 import numpy as np
 import pygame
 from pygame.constants import *
@@ -12,7 +15,8 @@ from sprites import Bird
 
 
 class FlappyBirdML(FlappyBird):
-    def __init__(self, total_models=50, load_saved_pool=True, save_current_pool=False, train=True):
+    def __init__(self, total_models=50, load_saved_pool=True, save_current_pool=False, train=True,
+                 fitness_mode: Literal['tournament ', 'russian_roulette'] = 'russian_roulette'):
         super().__init__()
         self.total_models = total_models
         self.fitness = [0 for _ in range(self.total_models)]
@@ -21,6 +25,7 @@ class FlappyBirdML(FlappyBird):
         self.current_pool = []
         self.generation = 1
         self.train = train
+        self.fitness_mode = fitness_mode
         self.bird_group = pygame.sprite.Group()
 
     def save_pool(self):
@@ -28,9 +33,29 @@ class FlappyBirdML(FlappyBird):
             model.save_weights(f"Current_Model_Pool/model_new{item}.keras")
         print("current pool saved.")
 
-    def model_fitness(self, k):
+    def model_fitness(self, fitness_mode, k=5):
         parent0 = np.random.randint(0, self.total_models)
         parent1 = np.random.randint(0, self.total_models)
+
+        if fitness_mode == "russian_roulette":
+            total_fitness = sum(self.fitness)
+            for select in range(self.total_models):
+                self.fitness[select] /= total_fitness
+                if select > 0:
+                    self.fitness[select] += self.fitness[select - 1]
+
+            p_parent0 = random.uniform(0, 1)
+            p_parent1 = random.uniform(0, 1)
+            for ix in range(self.total_models):
+                if self.fitness[ix] >= p_parent0:
+                    parent0 = ix
+                    break
+            for ix in range(self.total_models):
+                if self.fitness[ix] >= p_parent1:
+                    parent1 = ix
+                    break
+            return parent0, parent1
+
         for ix in np.random.randint(0, self.total_models, k - 1):
             if self.fitness[ix] < self.fitness[parent0]:
                 parent0 = ix
@@ -57,20 +82,16 @@ class FlappyBirdML(FlappyBird):
 
     @staticmethod
     def model_mutate(weights, p_mutation):
-        p_member_1 = random.random()
-        p_member_2 = random.random()
-        if p_member_1 < p_mutation:
-            for xi in range(len(weights[0])):
-                for yi in range(len(weights[0][xi])):
-                    if random.uniform(0, 1) > 0.90:
-                        change = random.uniform(-0.5, 0.5)
-                        weights[0][xi][yi] += change
-        if p_member_2 < p_mutation:
-            for xi in range(len(weights[1])):
-                for yi in range(len(weights[1][xi])):
-                    if random.uniform(0, 1) > 0.90:
-                        change = random.uniform(-0.5, 0.5)
-                        weights[1][xi][yi] += change
+        for xi in range(len(weights[0])):
+            for yi in range(len(weights[0][xi])):
+                if random.uniform(0, 1) > p_mutation:
+                    change = random.uniform(-0.5, 0.5)
+                    weights[0][xi][yi] += change
+        for xi in range(len(weights[1])):
+            for yi in range(len(weights[1][xi])):
+                if random.uniform(0, 1) > p_mutation:
+                    change = random.uniform(-0.5, 0.5)
+                    weights[1][xi][yi] += change
         return weights
 
     def predict_jump_action(self, height, dist, pipe_height, model_num):
@@ -80,7 +101,7 @@ class FlappyBirdML(FlappyBird):
         pipe_height = min(self.screen_height, pipe_height) / self.screen_height - 0.5
         neural_input = np.asarray([height, dist, pipe_height])
         neural_input = np.atleast_2d(neural_input)
-        output_prob = self.current_pool[model_num].predict(neural_input, 1)[0]
+        output_prob = self.current_pool[model_num].predict(neural_input, 1, verbose=0)[0]
         if output_prob[0] <= 0.5:
             # Perform the jump action
             return True
@@ -90,11 +111,14 @@ class FlappyBirdML(FlappyBird):
     def main_game(self):
         self.bird_group.empty()
         for player in range(self.total_models):
-            bird = Bird(self.player_x, self.player_y, self.images, player, False)
+            y = random.randint(-60, 80)
+            if not self.train:
+                y = 0
+            bird = Bird(self.player_x, self.player_y + y, self.images, player, False)
             self.bird_group.add(bird)
 
         pipe_list = []
-        new_pipe = self.get_random_pipe(self.screen_width)
+        new_pipe = self.get_random_pipe(self.screen_width + 200)
         pipe_list.append(new_pipe)
         self.pipe_group.empty()
         self.pipe_group.add(new_pipe[0])
@@ -200,9 +224,9 @@ class FlappyBirdML(FlappyBird):
         new_population = []
 
         for select in range(int(self.total_models / 2)):
-            parent0, parent1 = self.model_fitness(k=10)
+            parent0, parent1 = self.model_fitness(k=10, fitness_mode=self.fitness_mode)
             new_weights = self.model_crossover(parent0, parent1)
-            new_weights = self.model_mutate(new_weights, p_mutation=0.5)
+            new_weights = self.model_mutate(new_weights, p_mutation=0.75)
             new_population.append(new_weights[0])
             new_population.append(new_weights[1])
 
@@ -245,4 +269,6 @@ class FlappyBirdML(FlappyBird):
 
 
 if __name__ == "__main__":
-    FlappyBirdML(total_models=50, train=True, save_current_pool=True, load_saved_pool=True).play()
+    FlappyBirdML(total_models=50, train=True, save_current_pool=True, load_saved_pool=False,
+                 fitness_mode='russian_roulette').play()
+    # FlappyBirdML(total_models=2, train=False).play()
