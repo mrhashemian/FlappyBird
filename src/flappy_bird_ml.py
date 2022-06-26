@@ -118,23 +118,10 @@ class FlappyBirdML(FlappyBird):
         self.pipe_group.add(new_pipe[0])
         self.pipe_group.add(new_pipe[1])
 
-        # next_pipe_hole_y = (pipe_list[0][1].y_cord() + (
-        #         pipe_list[0][0].y_cord() + self.images['pipe'][1].get_height())) / 2
         next_pipe_x = pipe_list[0][1].pipe_center()[0]
         next_pipe_hole_y = (pipe_list[0][1].pipe_center()[1] + pipe_list[0][0].pipe_center()[1]) / 2
-        # print(next_pipe_x)
-        # print(pipe_list[0][1].y_cord(), pipe_list[0][0].y_cord(), next_pipe_hole_y)
-
-        # dot = pygame.Surface((5, 5))
-        # dot.fill((255, 0, 0))
-        # # print(dot, type(dot))
-        # # exit()
-        # self.screen.blit(dot, (next_pipe_x, next_pipe_hole_y))
-        # pygame.display.update()
 
         players_vel_y = [-9 for _ in range(self.total_models)]
-        player_vel_rot = 3  # angular speed
-        player_rot = 45
 
         while True:
             alive_players = len(self.bird_group.sprites())
@@ -153,7 +140,6 @@ class FlappyBirdML(FlappyBird):
                     'ground_crash': True,
                     'crash_pipe': None,
                     'player_vel_y': players_vel_y[0],
-                    'player_rot': player_rot
                 }
 
             for bird in self.bird_group.sprites():
@@ -175,11 +161,6 @@ class FlappyBirdML(FlappyBird):
                 for pipe_idx, pipe in enumerate(pipe_list):
                     pipe_mid_pos = pipe[0].x_cord() + self.images['pipe'][0].get_width()
                     if pipe_mid_pos <= self.player_x < pipe_mid_pos + 4:
-                        # print(pipe_idx, "hkshkfdshklsaalkfdklklkjlkfaklsjkljfak")
-                        # next_pipe_x = pipe_list[pipe_idx + 1][1].x_cord()
-                        # # next_pipe_x += 20
-                        # next_pipe_hole_y = pipe_list[pipe_idx + 1][1].y_cord() + (
-                        #         pipe_list[pipe_idx + 1][0].y_cord() + self.images['pipe'][1].get_height()) / 3.4
                         next_pipe_x = pipe_list[pipe_idx + 1][1].pipe_center()[0]
                         next_pipe_hole_y = (pipe_list[pipe_idx + 1][1].pipe_center()[1] +
                                             pipe_list[pipe_idx + 1][0].pipe_center()[1]) / 2
@@ -192,24 +173,19 @@ class FlappyBirdML(FlappyBird):
             self.loop_iter = (self.loop_iter + 1) % 30
             self.base_x = (self.base_x - 4) % -self.base_shift
 
-            # rotate the player
-            if player_rot > -90:
-                player_rot -= player_vel_rot
-
             # player's movement
             for bird in self.bird_group.sprites():
                 if players_vel_y[bird.idx] < config.playerMaxVelY and not bird.flapped:
                     players_vel_y[bird.idx] += config.playerAccY
                 if bird.flapped:
                     bird.flapped = False
-                    player_rot = 45
+
                 bird.y_loc += min(players_vel_y[bird.idx], config.BASEY - bird.y_loc - self.player_height)
 
                 # check for ground crash
                 if bird.y_loc + self.player_height >= config.BASEY - 1:
                     self.bird_group.remove(bird)
 
-            # print("out of loop", next_pipe_x, next_pipe_hole_y)
             # add new pipe
             if pipe_list[-1][0].x_cord() < self.screen_width - 130:
                 new_pipe = self.get_random_pipe()
@@ -223,10 +199,8 @@ class FlappyBirdML(FlappyBird):
                 self.pipe_group.remove(pipe_list[0][1])
                 pipe_list.pop(0)
 
-            # draw sprites
-
+            # draw screen
             self.screen.blit(self.images['background'], (0, 0))
-            # pygame.display.update()
             player_surface = self.images['player'][self.player_index]
             for bird in self.bird_group.sprites():
                 bird.update(player_surface, bird.y_loc)
@@ -235,12 +209,7 @@ class FlappyBirdML(FlappyBird):
             self.pipe_group.update()
             self.pipe_group.draw(self.screen)
             self.show_score()
-            dot = pygame.Surface((15, 15))
-            dot.fill((255, 0, 0))
-            # print(dot, type(dot))
-            # exit()
             pygame.draw.circle(self.screen, (255, 0, 0), (next_pipe_x - 3, next_pipe_hole_y), 6)  # E
-            # self.screen.blit(dot, (next_pipe_x, next_pipe_hole_y))
             self.screen.blit(self.images['base'], (self.base_x, config.BASEY))
             pygame.display.update()
             self.fps_clock.tick(config.FPS)
@@ -249,7 +218,7 @@ class FlappyBirdML(FlappyBird):
         new_population = []
 
         for select in range(int(self.total_models / 2)):
-            parent0, parent1 = self.model_fitness(k=3)
+            parent0, parent1 = self.model_fitness(k=10)
             new_weights = self.model_crossover(parent0, parent1)
             new_weights = self.model_mutate(new_weights, p_mutation=0.5)
             new_population.append(new_weights[0])
