@@ -11,9 +11,9 @@ class Settings(BaseSettings):
     SCREENWIDTH = 288
     SCREENHEIGHT = 512
     PIPEGAPSIZE = 100  # gap between upper and lower part of pipe
-    BASEY = SCREENHEIGHT * 0.89
+    BASEY = SCREENHEIGHT * 0.79
 
-    # list of all possible players (tuple of 3 positions of flap)
+    # list of all possible players
     PLAYERS_LIST = (
         # red bird
         (
@@ -51,16 +51,11 @@ class Settings(BaseSettings):
     else:
         soundExt = '.ogg'
 
-    # player velocity, max velocity, downward acceleration, acceleration on flap
-    # playerVelY = -9  # player's velocity along Y, default same as playerFlapped
     playerMaxVelY = 10  # max vel along Y, max descend speed
     playerMinVelY = -8  # min vel along Y, max ascend speed - no use
     playerAccY = 1  # players downward acceleration
-    # playerRot = 45  # player's rotation
-    # playerVelRot = 3  # angular speed
     playerRotThr = 20  # rotation threshold
     playerFlapAcc = -9  # players speed on flapping
-    # playerFlapped = False  # True when player flaps
 
 
 config = Settings()
