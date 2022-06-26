@@ -51,8 +51,8 @@ class FlappyBird:
         gap_y += int(config.BASEY * 0.2)
         pipe_height = self.images['pipe'][0].get_height()
         pipe_x = pip_x if pip_x else self.screen_width + 10
-        upper = UpperPipe(pipe_x, pipe_height - gap_y, pipe_speed, self.images)
-        lower = LowerPipe(pipe_x, config.PIPEGAPSIZE + gap_y, pipe_speed, self.images)
+        upper = UpperPipe(pipe_x,  - pipe_height + gap_y, pipe_speed, self.images)
+        lower = LowerPipe(pipe_x,  config.PIPEGAPSIZE + gap_y, pipe_speed, self.images)
         return [upper, lower]
 
     def show_score(self):
