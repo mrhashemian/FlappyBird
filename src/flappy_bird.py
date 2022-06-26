@@ -43,17 +43,16 @@ class FlappyBird:
             value -= 1
         return {'value': value, 'direction': direction, 'boundary': boundary}
 
-    def get_random_pipe(self):
+    def get_random_pipe(self, pip_x=None):
         """returns a randomly generated pipe"""
-        dt = self.fps_clock.tick(config.FPS) / 1000
-        pipe_speed = -128 * dt
+        pipe_speed = -4
 
         gap_y = random.randrange(0, int(config.BASEY * 0.6 - config.PIPEGAPSIZE))
         gap_y += int(config.BASEY * 0.2)
         pipe_height = self.images['pipe'][0].get_height()
-        pipe_x = self.screen_width + 10
-        upper = UpperPipe(pipe_x, pipe_height - gap_y, pipe_speed, self.images)
-        lower = LowerPipe(pipe_x, config.PIPEGAPSIZE + gap_y, pipe_speed, self.images)
+        pipe_x = pip_x if pip_x else self.screen_width + 10
+        upper = UpperPipe(pipe_x,  - pipe_height + gap_y, pipe_speed, self.images)
+        lower = LowerPipe(pipe_x,  config.PIPEGAPSIZE + gap_y, pipe_speed, self.images)
         return [upper, lower]
 
     def show_score(self):
@@ -117,7 +116,7 @@ class FlappyBird:
         self.bird_group.add(bird)
 
         pipe_list = []
-        new_pipe = self.get_random_pipe()
+        new_pipe = self.get_random_pipe(self.screen_width + 200)
         pipe_list.append(new_pipe)
         self.pipe_group.add(new_pipe[0])
         self.pipe_group.add(new_pipe[1])
