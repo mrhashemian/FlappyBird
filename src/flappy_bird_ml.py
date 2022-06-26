@@ -40,16 +40,6 @@ class FlappyBirdML(FlappyBird):
         return parent0, parent1
 
     def model_crossover(self, model_1, model_2):
-        # weights1 = self.current_pool[model_1].get_weights()
-        # weights2 = self.current_pool[model_2].get_weights()
-        # weightsnew1 = weights1
-        # weightsnew2 = weights2
-        # weightsnew1[0] = weights2[0]
-        # weightsnew2[0] = weights1[0]
-
-        # return np.asarray([weightsnew1, weightsnew2])
-
-        # global current_pool
         weights0 = self.current_pool[model_1].get_weights()
         weights1 = self.current_pool[model_2].get_weights()
 
@@ -82,14 +72,6 @@ class FlappyBirdML(FlappyBird):
                         change = random.uniform(-0.5, 0.5)
                         weights[1][xi][yi] += change
         return weights
-        # weights0 = self.current_pool[child].get_weights()
-        # ind = random.randrange(len(weights0))
-        # weights0[ind], weights0[ind - 1] = weights0[ind - 1], weights0[ind]
-        # return weights0
-
-    # def mutate(self, master):
-    #     mutation = np.random.normal(scale=1)
-    #     return master + mutation
 
     def predict_jump_action(self, height, dist, pipe_height, model_num):
         # The height, dist and pipe_height must be between 0 to 1 (Scaled by SCREENHEIGHT)
